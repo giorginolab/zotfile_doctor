@@ -1,4 +1,4 @@
-Zotfile consistency checker
+Zotfile directory consistency checker
 ==============================
 
 [Zotfile](http://zotfile.com) is an extension for
@@ -15,10 +15,6 @@ arguments. The output should be self-explanatory.  It does not modify
 the files nor the zotero DB. If you want to do clean-ups, you should
 do it yourself.
 
-It may serve as a workaround for the concerns expressed here:
-
- * https://github.com/jlegewie/zotfile/issues/96
- * https://forums.zotero.org/discussion/41179/zotfile-does-not-delete-pdf-files-when-a-database-entry-is-deleted
 
 
 Requirements
@@ -49,16 +45,27 @@ There were 8 files in zotfile directory but not in DB:
 ```
 
 
+See also
+--------
+
+These issues
+
+ * https://github.com/jlegewie/zotfile/issues/96
+ * https://forums.zotero.org/discussion/41179/zotfile-does-not-delete-pdf-files-when-a-database-entry-is-deleted
+
+
+
 Version
 -------
 
-Current as of 9/2019. May stop working if Zotero's internal storage format changes.
+Current as of 9/2019. May stop working if Zotero's internal storage
+format changes.
 
 
 Author
 ------
 
-Toni Giorgino, <giorginolab.it>
+Toni Giorgino, <www.giorginolab.it>
 
 
 License
