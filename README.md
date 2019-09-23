@@ -57,7 +57,7 @@ These issues
 Known issues
 ------------
 
-Files not ending in `.pdf` will be false positive (which includes capitalized `.PDF` etc.). 
+Files not ending in `.pdf` will be false positives (which includes capitalized `.PDF` etc.). 
 
 
 Version
