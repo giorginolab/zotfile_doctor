@@ -54,6 +54,11 @@ These issues
  * https://forums.zotero.org/discussion/41179/zotfile-does-not-delete-pdf-files-when-a-database-entry-is-deleted
 
 
+Known issues
+------------
+
+Files not ending in `.pdf` will be false positive (which includes capitalized `.PDF` etc.). 
+
 
 Version
 -------
