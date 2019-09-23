@@ -58,6 +58,7 @@ Known issues
 ------------
 
 Files not ending in `.pdf` will be false positives (which includes capitalized `.PDF` etc.). 
+Zotero must be closed (a locked DB can't be opened).
 
 
 Version
