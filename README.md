@@ -60,7 +60,7 @@ Known issues
 * Files not ending in `.pdf` will be false positives (which includes capitalized `.PDF` etc.). 
 * Zotero must be closed (a locked DB can't be opened).
 * Current as of 9/2019. May stop working if Zotero's internal storage format changes.
-* Syncing case-insensitive filesystems occasionally causes confusion (not a problem caused by this script though).
+* Syncing case-insensitive filesystems occasionally causes confusion (not a problem originated by this script though).
 
 
 Author
