@@ -31,15 +31,16 @@ def get_db_set(db, d):
 
     db_l = []
     for i in range(len(db_d)):
-        item = db_d[i][0]
-        if item.count('attachments:') > 0: # relative path
-            item = item.replace('attachments:', "")
-        else: # absolute path
-            try:
+        try:
+            # Ignore all kind of errors wholesale, i.e. duck typing
+            item = db_d[i][0]
+            if item.count('attachments:') > 0: # relative path
+                item = item.replace('attachments:', "")
+            else: # absolute path
                 item = str(pathlib.Path(item).relative_to(d))
-            except ValueError:
-                # file is not in zotfile directory
-                continue
+        except:
+            # file is not in zotfile directory
+            continue
 
         db_l.append(unicodedata.normalize("NFD", item))
         
