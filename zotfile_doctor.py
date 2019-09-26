@@ -16,47 +16,68 @@
 
 import sqlite3
 import sys
-import pathlib
 import unicodedata
+import fnmatch
+import os
+import pathlib
+import re
 
-
-def get_db_set(db):
+def get_db_set(db, d):
     conn = sqlite3.connect(db)
 
     db_c = conn.execute(
-        'select path from itemAttachments where path like "attachments:%"')
+        'select path from itemAttachments where linkMode = 2 or linkMode = 3 and contentType = "application/pdf"')
     db_d = db_c.fetchall()
 
-    db_l = [x[0].replace('attachments:', "") for x in db_d]
-    db_l = [unicodedata.normalize("NFD", x) for x in db_l]
+    db_l = []
+    for i in range(len(db_d)):
+        try:
+            # Ignore all kind of errors wholesale, i.e. duck typing
+            item = db_d[i][0]
+            if not item.lower().endswith(".pdf"):
+                continue
+            if item.count('attachments:') > 0: # relative path
+                item = item.replace('attachments:', "")
+            else: # absolute path
+                item = str(pathlib.Path(item).relative_to(d))
+        except:
+            # file is not in zotfile directory
+            continue
+
+        db_l.append(unicodedata.normalize("NFD", item))
+        
     db_set = set(db_l)
     return db_set
 
 
 def get_dir_set(d):
-    p = pathlib.Path(d)
-    fg = p.rglob("*.pdf")
-    fs = [str(x.relative_to(p)) for x in fg]
+    rule = re.compile(fnmatch.translate("*.pdf"), re.IGNORECASE)
+    matches = []
+    for root, dirnames, filenames in os.walk(d):
+        for filename in [name for name in filenames if rule.match(name)]:
+            matches.append(os.path.join(root, filename))
+
+    fs = [str(pathlib.Path(f).relative_to(d)) for f in matches]
     fs = [unicodedata.normalize("NFD", x) for x in fs]
     d_set = set(fs)
     return d_set
 
 
 def main(db, d):
-    db_set = get_db_set(db)
+    db_set = get_db_set(db, d)
     dir_set = get_dir_set(d)
 
     db_not_dir = db_set.difference(dir_set)
     dir_not_db = dir_set.difference(db_set)
 
     print(
-        f"There were {len(db_not_dir)} files in DB but not in zotfile directory:")
+        f"There were {len(db_not_dir)}/{len(db_set)} files in DB but not in zotfile directory:")
     for f in sorted(db_not_dir):
         print("   " + f)
 
     print("\n")
     print(
-        f"There were {len(dir_not_db)} files in zotfile directory but not in DB:")
+        f"There were {len(dir_not_db)}/{len(dir_set)} files in zotfile directory but not in DB:")
     for f in sorted(dir_not_db):
         print("   " + f)
 
