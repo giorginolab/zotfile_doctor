@@ -34,6 +34,8 @@ def get_db_set(db, d):
         try:
             # Ignore all kind of errors wholesale, i.e. duck typing
             item = db_d[i][0]
+            if not item.lower().endswith(".pdf"):
+                continue
             if item.count('attachments:') > 0: # relative path
                 item = item.replace('attachments:', "")
             else: # absolute path
@@ -69,13 +71,13 @@ def main(db, d):
     dir_not_db = dir_set.difference(db_set)
 
     print(
-        f"There were {len(db_not_dir)} files in DB but not in zotfile directory:")
+        f"There were {len(db_not_dir)}/{len(db_set)} files in DB but not in zotfile directory:")
     for f in sorted(db_not_dir):
         print("   " + f)
 
     print("\n")
     print(
-        f"There were {len(dir_not_db)} files in zotfile directory but not in DB:")
+        f"There were {len(dir_not_db)}/{len(dir_set)} files in zotfile directory but not in DB:")
     for f in sorted(dir_not_db):
         print("   " + f)
 
