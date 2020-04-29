@@ -23,6 +23,13 @@ import fnmatch
 import os
 import pathlib
 import re
+import tempfile
+
+
+def is_fs_case_sensitive():
+    with tempfile.NamedTemporaryFile(prefix='TmP') as tmp_file:
+        return(not os.path.exists(tmp_file.name.lower()))
+
 
 def get_db_set(db, d):
     conn = sqlite3.connect(db)
@@ -68,7 +75,11 @@ def get_dir_set(d):
 def main(db, d):
     db_set = get_db_set(db, d)
     dir_set = get_dir_set(d)
-
+    
+    if not is_fs_case_sensitive():
+        db_set  = set(map(str.lower, db_set))
+        dir_set = set(map(str.lower, dir_set))
+    
     db_not_dir = db_set.difference(dir_set)
     dir_not_db = dir_set.difference(db_set)
 
