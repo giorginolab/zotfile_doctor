@@ -26,8 +26,8 @@ import re
 import tempfile
 
 
-def is_fs_case_sensitive():
-    with tempfile.NamedTemporaryFile(prefix='TmP') as tmp_file:
+def is_fs_case_sensitive(path):
+    with tempfile.NamedTemporaryFile(prefix='TmP', dir=path) as tmp_file:
         return(not os.path.exists(tmp_file.name.lower()))
 
 
@@ -76,7 +76,7 @@ def main(db, d):
     db_set = get_db_set(db, d)
     dir_set = get_dir_set(d)
     
-    if not is_fs_case_sensitive():
+    if not is_fs_case_sensitive(d):
         db_set  = set(map(str.lower, db_set))
         dir_set = set(map(str.lower, dir_set))
     
