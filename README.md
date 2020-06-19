@@ -15,19 +15,23 @@ arguments. The output should be self-explanatory.  It does not modify
 the files nor the zotero DB. If you want to do clean-ups, you should
 do it yourself.
 
-
-
 Requirements
 ------------
 
 Python 3.5 or higher.
 
-
 Usage
 -----
 
-    python zotfile_doctor.py zotero.sqlite zotfile_directory
-   
+Display differences only
+```
+python zotfile_doctor.py zotero.sqlite zotfile_directory
+```
+
+Display disfferences and clean zotfile directory
+```
+python zotfile_doctor.py zotero.sqlite zotfile_directory -c
+```
 
 Example output
 --------------
@@ -37,13 +41,10 @@ There were 2 files in DB but not in zotfile directory:
    Statistics/Socio/Herrera et al_2010_Mapping the Evolution of Scientific Fields.PDF
    [...]
 
-
 There were 8 files in zotfile directory but not in DB:
    MD/MM-PBSA/Chen et al_2016_Assessing the performance of the MM-PBSA and MM-GBSA methods.pdf
    [...]
-
 ```
-
 
 See also
 --------
@@ -53,21 +54,18 @@ These issues
  * https://github.com/jlegewie/zotfile/issues/96
  * https://forums.zotero.org/discussion/41179/zotfile-does-not-delete-pdf-files-when-a-database-entry-is-deleted
 
-
 Known issues
 ------------
 
-* Files not ending in `.pdf` will be false positives (which includes capitalized `.PDF` etc.). 
-* Zotero must be closed (a locked DB can't be opened).
-* Current as of 9/2019. May stop working if Zotero's internal storage format changes.
-* Syncing case-insensitive filesystems occasionally causes confusion (not a problem originated by this script though).
-
+- Files not ending in `.pdf` will be false positives (which includes capitalized `.PDF` etc.).
+- Zotero must be closed (a locked DB can't be opened).
+- Current as of 9/2019. May stop working if Zotero's internal storage format changes.
+- Syncing case-insensitive filesystems occasionally causes confusion (not a problem originated by this script though).
 
 Author
 ------
 
 Toni Giorgino, <www.giorginolab.it>
-
 
 License
 -------
@@ -84,4 +82,3 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
-

@@ -16,13 +16,14 @@
 
 """Checks the consistency between the zotfile-managed directory and the database"""
 
-import sqlite3
-import sys
-import unicodedata
+import argparse
 import fnmatch
 import os
 import pathlib
 import re
+import sqlite3
+import unicodedata
+
 
 def get_db_set(db, d):
     conn = sqlite3.connect(db)
@@ -32,7 +33,7 @@ def get_db_set(db, d):
     db_d = db_c.fetchall()
 
     db_l = []
-    for i in range(len(db_d)):
+    for i, _ in enumerate(db_d):
         try:
             # Ignore all kind of errors wholesale, i.e. duck typing
             item = db_d[i][0]
@@ -47,15 +48,14 @@ def get_db_set(db, d):
             continue
 
         db_l.append(unicodedata.normalize("NFD", item))
-        
+
     db_set = set(db_l)
     return db_set
-
 
 def get_dir_set(d):
     rule = re.compile(fnmatch.translate("*.pdf"), re.IGNORECASE)
     matches = []
-    for root, dirnames, filenames in os.walk(d):
+    for root, _dirnames, filenames in os.walk(d):
         for filename in [name for name in filenames if rule.match(name)]:
             matches.append(os.path.join(root, filename))
 
@@ -64,30 +64,40 @@ def get_dir_set(d):
     d_set = set(fs)
     return d_set
 
+def remove_empty_dirs(d):
+    for root, dirnames, _filenames in os.walk(d, topdown=False):
+        for dirname in dirnames:
+            try:
+                os.rmdir(os.path.realpath(os.path.join(root, dirname)))
+            except OSError:
+                continue
 
-def main(db, d):
+def main(db, d, clean=False):
     db_set = get_db_set(db, d)
     dir_set = get_dir_set(d)
 
     db_not_dir = db_set.difference(dir_set)
     dir_not_db = dir_set.difference(db_set)
 
-    print(
-        f"There were {len(db_not_dir)}/{len(db_set)} files in DB but not in zotfile directory:")
+    print(f"There were {len(db_not_dir)}/{len(db_set)} files in DB but not in zotfile directory:")
     for f in sorted(db_not_dir):
         print("   " + f)
-
-    print("\n")
-    print(
-        f"There were {len(dir_not_db)}/{len(dir_set)} files in zotfile directory but not in DB:")
+    print(f"\nThere were {len(dir_not_db)}/{len(dir_set)} files in zotfile directory but not in DB:")
     for f in sorted(dir_not_db):
         print("   " + f)
 
+    if clean and len(dir_not_db) > 0:
+        for f in dir_not_db:
+            os.remove(os.path.join(d, f))
+        remove_empty_dirs(d)
+        print(f"\n{len(dir_not_db)} files and empty directories has been removed")
+
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} zotero.sqlite zotfile_directory")
-        sys.exit(1)
-
-    main(sys.argv[1],
-         sys.argv[2])
+    parser = argparse.ArgumentParser(description="zotfile directory consistency checker")
+    parser.add_argument("zotero_sqlite", help="path-to-zotero/zotero.sqlite")
+    parser.add_argument("zotfile_directory", help="zotfile directory")
+    parser.add_argument("-c", "--clean", action="store_true",
+                        help="remove files in zotfile directory but not in DB")
+    args = parser.parse_args()
+    main(args.zotero_sqlite, args.zotfile_directory, args.clean)
