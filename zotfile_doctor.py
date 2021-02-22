@@ -17,10 +17,10 @@
 """Checks the consistency between the zotfile-managed directory and the database"""
 
 import argparse
-import fnmatch
+
 import os
 import pathlib
-import re
+
 import sqlite3
 import unicodedata
 
@@ -29,7 +29,7 @@ def get_db_set(db, d):
     conn = sqlite3.connect(db)
 
     db_c = conn.execute(
-        'select path from itemAttachments where linkMode = 2 or linkMode = 3 and contentType = "application/pdf"')
+        'select path from itemAttachments where linkMode = 2 or linkMode = 3 and ( contentType = "application/pdf" or contentType = "application/caj")')
     db_d = db_c.fetchall()
 
     db_l = []
@@ -38,10 +38,11 @@ def get_db_set(db, d):
             # Ignore all kind of errors wholesale, i.e. duck typing
             item = db_d[i][0]
             if not item.lower().endswith(".pdf"):
-                continue
-            if item.count('attachments:') > 0: # relative path
+                if not item.lower().endswith(".caj"):
+                    continue
+            if item.count('attachments:') > 0:  # relative path
                 item = item.replace('attachments:', "")
-            else: # absolute path
+            else:  # absolute path
                 item = str(pathlib.Path(item).relative_to(d))
         except:
             # file is not in zotfile directory
@@ -50,19 +51,26 @@ def get_db_set(db, d):
         db_l.append(unicodedata.normalize("NFD", item))
 
     db_set = set(db_l)
+    print(db_l)
     return db_set
 
-def get_dir_set(d):
-    rule = re.compile(fnmatch.translate("*.pdf"), re.IGNORECASE)
-    matches = []
-    for root, _dirnames, filenames in os.walk(d):
-        for filename in [name for name in filenames if rule.match(name)]:
-            matches.append(os.path.join(root, filename))
 
-    fs = [str(pathlib.Path(f).relative_to(d)) for f in matches]
-    fs = [unicodedata.normalize("NFD", x) for x in fs]
-    d_set = set(fs)
+def get_dir_set(d):
+    # 遍历后缀为.pdf、.caj的文件，包含子目录。两次for是为了去掉嵌套列表。https://qastack.cn/programming/4568580/python-glob-multiple-filetypes
+    glob = [f for f_ in [pathlib.Path(d).glob(e) for e in ('**/*.pdf', '**/*.caj')] for f in f_]
+    # print(glob)
+    d_l = []
+    for i in glob:
+        i = pathlib.Path(i).relative_to(d)   # 转换为相对链接
+        i = pathlib.Path.as_posix(i)         # windows-->unix
+        # print(i)
+        d_l.append(i)
+    # print(d_l)
+    d_set = set(d_l)
     return d_set
+
+
+
 
 def remove_empty_dirs(d):
     for root, dirnames, _filenames in os.walk(d, topdown=False):
@@ -71,6 +79,7 @@ def remove_empty_dirs(d):
                 os.rmdir(os.path.realpath(os.path.join(root, dirname)))
             except OSError:
                 continue
+
 
 def main(db, d, clean=False):
     db_set = get_db_set(db, d)
@@ -94,6 +103,7 @@ def main(db, d, clean=False):
 
 
 if __name__ == "__main__":
+
     parser = argparse.ArgumentParser(description="zotfile directory consistency checker")
     parser.add_argument("zotero_sqlite", help="path-to-zotero/zotero.sqlite")
     parser.add_argument("zotfile_directory", help="zotfile directory")
@@ -101,3 +111,8 @@ if __name__ == "__main__":
                         help="remove files in zotfile directory but not in DB")
     args = parser.parse_args()
     main(args.zotero_sqlite, args.zotfile_directory, args.clean)
+    '''
+    db = "D:/Northword/Documents/Zotero/zotero.sqlite"
+    d = "D:/OneDrive/Postgraduate/01_Paper"
+    main(db, d, False)
+    '''
