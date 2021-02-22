@@ -51,7 +51,7 @@ def get_db_set(db, d):
         db_l.append(unicodedata.normalize("NFD", item))
 
     db_set = set(db_l)
-    print(db_l)
+    # print(db_l)
     return db_set
 
 
