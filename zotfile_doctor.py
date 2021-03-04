@@ -20,7 +20,7 @@ import argparse
 
 import os
 import pathlib
-
+import re
 import sqlite3
 import unicodedata
 
