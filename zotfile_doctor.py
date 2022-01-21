@@ -23,7 +23,11 @@ import pathlib
 import re
 import sqlite3
 import unicodedata
+import tempfile
 
+def is_fs_case_sensitive(d):
+    with tempfile.NamedTemporaryFile(prefix='TmP', dir=d) as tmp_file:
+        return(not os.path.exists(tmp_file.name.lower()))
 
 def get_db_set(db, d):
     conn = sqlite3.connect(db)
@@ -47,7 +51,7 @@ def get_db_set(db, d):
             # file is not in zotfile directory
             continue
 
-        db_l.append(unicodedata.normalize("NFD", item))
+        db_l.append(os.path.normpath(unicodedata.normalize("NFD", item)))
 
     db_set = set(db_l)
     return db_set
@@ -60,7 +64,7 @@ def get_dir_set(d):
             matches.append(os.path.join(root, filename))
 
     fs = [str(pathlib.Path(f).relative_to(d)) for f in matches]
-    fs = [unicodedata.normalize("NFD", x) for x in fs]
+    fs = [os.path.normpath(unicodedata.normalize("NFD", x)) for x in fs]
     d_set = set(fs)
     return d_set
 
@@ -75,6 +79,10 @@ def remove_empty_dirs(d):
 def main(db, d, clean=False):
     db_set = get_db_set(db, d)
     dir_set = get_dir_set(d)
+
+    if not is_fs_case_sensitive(d):
+        db_set  = set(map(str.lower, db_set))
+        dir_set = set(map(str.lower, dir_set))
 
     db_not_dir = db_set.difference(dir_set)
     dir_not_db = dir_set.difference(db_set)
