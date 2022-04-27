@@ -43,6 +43,7 @@ def get_db_set(db, d):
                 item = item.replace('attachments:', "")
             else: # absolute path
                 item = str(pathlib.Path(item).relative_to(d))
+            item = item.replace('/', os.sep)
         except:
             # file is not in zotfile directory
             continue
